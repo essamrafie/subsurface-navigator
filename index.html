@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subsurface Navigator — Navigate the Earth. Discover What's Below.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:     #080C10;
+    --deep:      #0B1220;
+    --layer1:    #0E1E35;
+    --layer2:    #112444;
+    --accent:    #00C8A0;
+    --accent2:   #0066FF;
+    --gold:      #E8A830;
+    --white:     #F0F4FF;
+    --muted:     #7A90B0;
+    --display:   'Space Grotesk', sans-serif;
+    --mono:      'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--display);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(8,12,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,200,160,0.1);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: var(--black) !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 600 !important;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 6rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Geology + AI hero background */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(0,200,160,0.07) 1px, transparent 1px),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        rgba(0,200,160,0.03) 28px,
+        rgba(0,200,160,0.03) 29px
+      );
+    background-size: 40px 40px, 100% 100%;
+    animation: geologyScan 25s linear infinite;
+  }
+
+  @keyframes geologyScan {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 0 40px, 0 0; }
+  }
+
+  /* Subsurface glow layers */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70%;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(0,102,255,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 30% 80%, rgba(0,200,160,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 90%, rgba(232,168,48,0.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-eyebrow span {
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin: 0 0.75rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+    z-index: 1;
+    line-height: 1.7;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--black);
+    padding: 0.85rem 2rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(0,200,160,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,200,160,0.5);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    padding: 0.85rem 2rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 1px solid rgba(240,244,255,0.2);
+    letter-spacing: 0.03em;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    background: rgba(0,200,160,0.05);
+  }
+
+  /* Depth indicator */
+  .depth-bar {
+    position: relative;
+    z-index: 1;
+    margin-top: 5rem;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .depth-stat {
+    text-align: center;
+  }
+
+  .depth-stat .num {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+
+  .depth-stat .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .depth-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* ── SEISMIC VISUALIZER ── */
+  .seismic-section {
+    padding: 5rem 4rem;
+    background: var(--deep);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .seismic-canvas {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 3rem;
+    display: block;
+    border: 1px solid rgba(0,200,160,0.15);
+    border-radius: 8px;
+    background: var(--black);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 6rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 540px;
+    margin-bottom: 4rem;
+    line-height: 1.7;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+  }
+
+  .step {
+    position: relative;
+    padding: 2rem;
+    background: var(--layer1);
+    border: 1px solid rgba(0,200,160,0.1);
+    border-radius: 8px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .step:hover {
+    border-color: rgba(0,200,160,0.4);
+    transform: translateY(-4px);
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .step h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--white);
+  }
+
+  .step p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .step-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  /* ── FEATURES ── */
+  .features-section {
+    padding: 6rem 4rem;
+    background: var(--deep);
+  }
+
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .feature-card {
+    padding: 2.5rem;
+    background: var(--layer1);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover { border-color: rgba(0,200,160,0.2); }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+    display: block;
+  }
+
+  .feature-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--white);
+  }
+
+  .feature-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── QUOTE ── */
+  .quote-section {
+    padding: 5rem 4rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .quote-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,102,255,0.08) 0%, transparent 70%);
+  }
+
+  blockquote {
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    font-weight: 500;
+    max-width: 780px;
+    margin: 0 auto;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+  }
+
+  blockquote em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 7rem 4rem;
+    background: var(--layer1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(0,200,160,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 50%, rgba(0,102,255,0.08) 0%, transparent 60%);
+  }
+
+  /* Horizon lines decoration */
+  .horizon-lines {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    overflow: hidden;
+    opacity: 0.3;
+  }
+
+  .horizon-lines::before,
+  .horizon-lines::after {
+    content: '';
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 1px;
+  }
+
+  .horizon-lines::before {
+    bottom: 40px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .horizon-lines::after {
+    bottom: 20px;
+    background: linear-gradient(90deg, transparent, rgba(0,102,255,0.6), transparent);
+  }
+
+  .cta-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,200,160,0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-section h2 {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-section h2 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .cta-section p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+  }
+
+  .cta-trust {
+    font-size: 0.78rem;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.05em;
+  }
+
+  .cta-trust span {
+    color: rgba(0,200,160,0.6);
+    margin: 0 0.5rem;
+  }
+
+  /* ── EMAIL CAPTURE ── */
+  .cta-form {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-form input[type="email"] {
+    font-family: var(--display);
+    font-size: 0.9rem;
+    color: var(--white);
+    background: rgba(8,12,16,0.6);
+    border: 1px solid rgba(240,244,255,0.18);
+    border-radius: 4px;
+    padding: 0.85rem 1.1rem;
+    width: 300px;
+    max-width: 80vw;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .cta-form input[type="email"]::placeholder {
+    color: var(--muted);
+  }
+
+  .cta-form input[type="email"]:focus {
+    border-color: var(--accent);
+    background: rgba(8,12,16,0.85);
+  }
+
+  .cta-form input[type="email"]:invalid:not(:placeholder-shown) {
+    border-color: #E85C5C;
+  }
+
+  .cta-form button {
+    font-family: var(--display);
+    background: var(--accent);
+    color: var(--black);
+    padding: 0.85rem 1.8rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(0,200,160,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .cta-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,200,160,0.5);
+  }
+
+  .cta-form button:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+  }
+
+  .cta-form-note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.5rem;
+    min-height: 1.2em;
+  }
+
+  .cta-form-note.success {
+    color: var(--accent);
+  }
+
+  .cta-secondary-link {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+  }
+
+  .cta-secondary-link a {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(122,144,176,0.4);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .cta-secondary-link a:hover {
+    color: var(--white);
+    border-color: var(--white);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem 4rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* ── SEISMIC SVG ANIMATION ── */
+  .seismic-viz {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 1rem;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">⬡ Subsurface Navigator</div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#cta" class="nav-cta">Request Access</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span></span> AI-Powered Exploration Platform <span></span>
+  </div>
+  <h1>Navigate the Earth.<br><em>Discover What's Below.</em></h1>
+  <p class="hero-sub">
+    Subsurface Navigator transforms how geoscientists detect, analyze, and predict hydrocarbon traps. Teams typically spend over half their exploration cycle on manual horizon picking — we replace it with an immersive, AI-powered experience.
+  </p>
+  <div class="hero-buttons">
+    <a href="#cta" class="btn-primary">Join the Waiting List</a>
+    <a href="#how" class="btn-secondary">See How It Works</a>
+  </div>
+
+  <div class="depth-bar">
+    <div class="depth-stat">
+      <span class="num">2×</span>
+      <span class="label">Faster Interpretation</span>
+    </div>
+    <div class="depth-divider"></div>
+    <div class="depth-stat">
+      <span class="num">3D</span>
+      <span class="label">Anomaly Reconstruction</span>
+    </div>
+    <div class="depth-divider"></div>
+    <div class="depth-stat">
+      <span class="num">AI</span>
+      <span class="label">Grounded Trap Prediction</span>
+    </div>
+    <div class="depth-divider"></div>
+    <div class="depth-stat">
+      <span class="num">100%</span>
+      <span class="label">Sovereign Infrastructure</span>
+    </div>
+  </div>
+</section>
+
+<!-- SEISMIC VISUALIZER -->
+<section class="seismic-section">
+  <svg class="seismic-viz" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Salt dome fill -->
+      <radialGradient id="saltGrad" cx="50%" cy="60%" r="50%">
+        <stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.95"/>
+        <stop offset="60%" stop-color="#0d2240" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#081828" stop-opacity="0.85"/>
+      </radialGradient>
+      <!-- Salt dome glow -->
+      <radialGradient id="saltGlow" cx="50%" cy="40%" r="50%">
+        <stop offset="0%" stop-color="rgba(0,200,160,0.15)"/>
+        <stop offset="100%" stop-color="rgba(0,200,160,0)"/>
+      </radialGradient>
+      <!-- Hydrocarbon trap glow -->
+      <radialGradient id="trapGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="rgba(232,168,48,0.25)"/>
+        <stop offset="100%" stop-color="rgba(232,168,48,0)"/>
+      </radialGradient>
+      <!-- Seismic wiggle clip -->
+      <clipPath id="leftClip">
+        <rect x="0" y="0" width="340" height="380"/>
+      </clipPath>
+      <clipPath id="rightClip">
+        <rect x="560" y="0" width="340" height="380"/>
+      </clipPath>
+      <!-- AI pulse filter -->
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+      </filter>
+    </defs>
+
+    <!-- Background -->
+    <rect width="900" height="380" fill="#060A0F" rx="10"/>
+
+    <!-- Deep earth subtle gradient -->
+    <rect width="900" height="380" fill="url(#saltGlow)" rx="10" opacity="0.4"/>
+
+    <!-- ═══ SEISMIC WIGGLE TRACES — LEFT OF DOME ═══ -->
+    <!-- Each trace is a vertical sinusoidal wiggle representing seismic amplitude -->
+    <g clip-path="url(#leftClip)" opacity="0.7">
+      <!-- Traces spaced 18px apart, disrupted by salt dome intrusion -->
+      <!-- Trace columns x=30,48,66,84,102,120,138,156,174,192,210,228,246,264,282,300,318,336 -->
+
+      <!-- Flat undisturbed traces far left -->
+      <path d="M30,20 C33,40 27,60 30,80 C33,100 27,120 30,140 C33,160 27,180 30,200 C33,220 27,240 30,260 C33,280 27,300 30,320 C33,340 27,360 30,380" stroke="rgba(0,200,160,0.4)" stroke-width="1" fill="none"/>
+      <path d="M48,20 C52,42 44,62 48,82 C52,102 44,122 48,142 C52,162 44,182 48,202 C52,222 44,242 48,262 C52,282 44,302 48,322 C52,342 44,362 48,380" stroke="rgba(0,200,160,0.4)" stroke-width="1" fill="none"/>
+      <path d="M66,20 C70,43 62,63 66,83 C70,103 62,123 66,143 C70,163 62,183 66,203 C70,223 62,243 66,263 C70,283 62,303 66,323 C70,343 62,363 66,380" stroke="rgba(0,200,160,0.38)" stroke-width="1" fill="none"/>
+      <path d="M84,20 C89,44 79,65 84,85 C89,105 79,125 84,145 C89,165 79,185 84,205 C89,225 79,245 84,265 C89,285 79,305 84,325 C89,345 79,365 84,380" stroke="rgba(0,200,160,0.36)" stroke-width="1" fill="none"/>
+      <path d="M102,20 C107,45 97,66 102,86 C107,106 97,126 102,146 C107,166 97,186 102,206 C107,226 97,246 102,266 C107,286 97,306 102,326 C107,346 97,366 102,380" stroke="rgba(0,200,160,0.35)" stroke-width="1" fill="none"/>
+
+      <!-- Traces starting to bend toward dome -->
+      <path d="M120,20 C126,46 114,68 120,90 C126,112 114,132 119,152 C123,172 115,192 118,212 C122,235 112,258 115,278 C120,300 112,320 116,342 C120,362 114,372 120,380" stroke="rgba(0,200,160,0.35)" stroke-width="1" fill="none"/>
+      <path d="M138,20 C145,47 131,70 138,93 C145,116 131,136 136,158 C141,180 131,200 134,222 C139,248 128,272 131,294 C137,318 129,338 133,360 C137,372 131,376 138,380" stroke="rgba(0,200,160,0.33)" stroke-width="1" fill="none"/>
+      <path d="M156,20 C165,48 149,72 156,96 C165,122 149,142 154,166 C160,192 148,212 152,237 C158,265 146,290 149,314 C156,340 147,358 151,374 C155,380 150,380 156,380" stroke="rgba(0,200,160,0.32)" stroke-width="1" fill="none"/>
+
+      <!-- Heavily disrupted traces near dome -->
+      <path d="M174,20 C186,50 162,76 174,102 C188,132 164,152 170,180 C178,212 162,234 167,262 C175,295 161,320 165,348 C170,368 163,376 174,380" stroke="rgba(0,102,255,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M192,20 C208,52 176,80 192,110 C210,144 178,166 185,198 C195,236 176,260 181,292 C190,330 175,354 180,374 C185,382 178,380 192,380" stroke="rgba(0,102,255,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M210,20 C230,55 190,85 210,118 C232,156 192,180 200,216 C212,258 190,284 196,320 C207,360 191,374 197,380 C202,384 196,380 210,380" stroke="rgba(0,102,255,0.4)" stroke-width="1.2" fill="none"/>
+
+      <!-- Very disrupted pulling into dome -->
+      <path d="M228,20 C256,58 204,92 228,130 C258,174 206,200 215,242 C229,290 206,316 213,358 C218,378 210,380 228,380" stroke="rgba(0,102,255,0.38)" stroke-width="1" fill="none"/>
+      <path d="M246,20 C280,62 216,100 246,142 C282,192 218,220 228,268 C244,324 220,350 228,375 C233,384 224,380 246,380" stroke="rgba(0,102,255,0.35)" stroke-width="1" fill="none"/>
+      <path d="M264,20 C304,66 228,108 264,154 C306,210 230,240 241,294 C260,358 233,376 242,380 C248,384 238,380 264,380" stroke="rgba(0,102,255,0.3)" stroke-width="1" fill="none"/>
+      <path d="M282,20 C328,70 240,116 282,166 C330,228 242,260 254,320 C276,392 246,390 256,390 C262,392 252,382 282,380" stroke="rgba(0,102,255,0.25)" stroke-width="1" fill="none"/>
+      <path d="M300,20 C352,74 252,124 300,178 C354,248 254,282 267,348 C290,420 260,406 270,400 C276,402 266,384 300,380" stroke="rgba(232,168,48,0.3)" stroke-width="1" fill="none"/>
+      <path d="M318,20 C376,78 264,132 318,190 C378,266 266,304 280,376 C290,424 272,410 284,406 C290,408 280,386 318,380" stroke="rgba(232,168,48,0.25)" stroke-width="1" fill="none"/>
+      <path d="M336,20 C400,82 276,140 336,202 C402,284 278,326 293,404 C306,450 286,426 298,420 C304,422 294,390 336,380" stroke="rgba(232,168,48,0.2)" stroke-width="1" fill="none"/>
+    </g>
+
+    <!-- ═══ SEISMIC WIGGLE TRACES — RIGHT OF DOME ═══ -->
+    <g clip-path="url(#rightClip)" opacity="0.7">
+      <path d="M870,20 C867,40 873,60 870,80 C867,100 873,120 870,140 C867,160 873,180 870,200 C867,220 873,240 870,260 C867,280 873,300 870,320 C867,340 873,360 870,380" stroke="rgba(0,200,160,0.4)" stroke-width="1" fill="none"/>
+      <path d="M852,20 C848,42 856,62 852,82 C848,102 856,122 852,142 C848,162 856,182 852,202 C848,222 856,242 852,262 C848,282 856,302 852,322 C848,342 856,362 852,380" stroke="rgba(0,200,160,0.4)" stroke-width="1" fill="none"/>
+      <path d="M834,20 C830,43 838,63 834,83 C830,103 838,123 834,143 C830,163 838,183 834,203 C830,223 838,243 834,263 C830,283 838,303 834,323 C830,343 838,363 834,380" stroke="rgba(0,200,160,0.38)" stroke-width="1" fill="none"/>
+      <path d="M816,20 C811,44 821,65 816,85 C811,105 821,125 816,145 C811,165 821,185 816,205 C811,225 821,245 816,265 C811,285 821,305 816,325 C811,345 821,365 816,380" stroke="rgba(0,200,160,0.36)" stroke-width="1" fill="none"/>
+      <path d="M798,20 C793,45 803,66 798,86 C793,106 803,126 798,146 C793,166 803,186 798,206 C793,226 803,246 798,266 C793,286 803,306 798,326 C793,346 803,366 798,380" stroke="rgba(0,200,160,0.35)" stroke-width="1" fill="none"/>
+      <path d="M780,20 C774,46 786,68 780,90 C774,112 786,132 781,152 C777,172 785,192 782,212 C778,235 788,258 785,278 C780,300 788,320 784,342 C780,362 786,372 780,380" stroke="rgba(0,200,160,0.35)" stroke-width="1" fill="none"/>
+      <path d="M762,20 C755,47 769,70 762,93 C755,116 769,136 764,158 C759,180 769,200 766,222 C761,248 772,272 769,294 C763,318 771,338 767,360 C763,372 769,376 762,380" stroke="rgba(0,200,160,0.33)" stroke-width="1" fill="none"/>
+      <path d="M744,20 C735,48 751,72 744,96 C735,122 751,142 746,166 C740,192 752,212 748,237 C742,265 754,290 751,314 C744,340 753,358 749,374 C745,380 750,380 744,380" stroke="rgba(0,200,160,0.32)" stroke-width="1" fill="none"/>
+      <path d="M726,20 C714,50 738,76 726,102 C712,132 736,152 730,180 C722,212 738,234 733,262 C725,295 739,320 735,348 C730,368 737,376 726,380" stroke="rgba(0,102,255,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M708,20 C692,52 724,80 708,110 C690,144 722,166 715,198 C705,236 724,260 719,292 C710,330 725,354 720,374 C715,382 722,380 708,380" stroke="rgba(0,102,255,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M690,20 C670,55 710,85 690,118 C668,156 708,180 700,216 C688,258 710,284 704,320 C693,360 709,374 703,380 C698,384 704,380 690,380" stroke="rgba(0,102,255,0.4)" stroke-width="1.2" fill="none"/>
+      <path d="M672,20 C644,58 696,92 672,130 C642,174 694,200 685,242 C671,290 694,316 687,358 C682,378 690,380 672,380" stroke="rgba(0,102,255,0.38)" stroke-width="1" fill="none"/>
+      <path d="M654,20 C620,62 684,100 654,142 C618,192 682,220 672,268 C656,324 680,350 672,375 C667,384 676,380 654,380" stroke="rgba(0,102,255,0.35)" stroke-width="1" fill="none"/>
+      <path d="M636,20 C596,66 672,108 636,154 C594,210 670,240 659,294 C640,358 667,376 658,380 C652,384 662,380 636,380" stroke="rgba(0,102,255,0.3)" stroke-width="1" fill="none"/>
+      <path d="M618,20 C572,70 660,116 618,166 C570,228 658,260 646,320 C624,392 654,390 644,390 C638,392 648,382 618,380" stroke="rgba(0,102,255,0.25)" stroke-width="1" fill="none"/>
+      <path d="M600,20 C548,74 648,124 600,178 C546,248 646,282 633,348 C610,420 640,406 630,400 C624,402 634,384 600,380" stroke="rgba(232,168,48,0.3)" stroke-width="1" fill="none"/>
+      <path d="M582,20 C524,78 636,132 582,190 C522,266 634,304 620,376 C610,424 628,410 616,406 C610,408 620,386 582,380" stroke="rgba(232,168,48,0.25)" stroke-width="1" fill="none"/>
+      <path d="M564,20 C500,82 624,140 564,202 C498,284 622,326 607,404 C594,450 614,426 602,420 C596,422 606,390 564,380" stroke="rgba(232,168,48,0.2)" stroke-width="1" fill="none"/>
+    </g>
+
+    <!-- ═══ SALT DOME BODY ═══ -->
+    <!-- Main salt dome shape — mushroom/diapir form rising from depth -->
+    <path d="M340,380 C340,340 330,300 320,260 C308,215 300,175 310,145 C322,110 348,88 380,72 C400,62 420,56 450,54 C480,56 500,62 520,72 C552,88 578,110 590,145 C600,175 592,215 580,260 C570,300 560,340 560,380 Z"
+      fill="url(#saltGrad)" opacity="0.92"/>
+
+    <!-- Salt dome surface texture — internal reflections -->
+    <path d="M360,380 C358,345 350,310 344,272 C336,230 332,196 342,168 C354,136 374,116 400,104 C418,96 434,92 450,91 C466,92 482,96 500,104 C526,116 546,136 558,168 C568,196 564,230 556,272 C550,310 542,345 540,380"
+      fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+    <path d="M380,380 C377,348 370,315 366,280 C360,242 358,210 368,186 C380,158 398,140 420,130 C432,124 441,121 450,120 C459,121 468,124 480,130 C502,140 520,158 532,186 C542,210 540,242 534,280 C530,315 523,348 520,380"
+      fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+    <!-- Salt dome glow overlay -->
+    <ellipse cx="450" cy="200" rx="120" ry="180" fill="url(#saltGlow)" opacity="0.5"/>
+
+    <!-- Salt dome edge highlight -->
+    <path d="M340,380 C340,340 330,300 320,260 C308,215 300,175 310,145 C322,110 348,88 380,72 C400,62 420,56 450,54 C480,56 500,62 520,72"
+      fill="none" stroke="rgba(0,200,160,0.3)" stroke-width="1.5"/>
+    <path d="M520,72 C552,88 578,110 590,145 C600,175 592,215 580,260 C570,300 560,340 560,380"
+      fill="none" stroke="rgba(0,200,160,0.2)" stroke-width="1"/>
+
+    <!-- ═══ HYDROCARBON TRAP ═══ -->
+    <!-- Trap zone on left flank of dome -->
+    <ellipse cx="320" cy="185" rx="45" ry="22" fill="url(#trapGlow)" opacity="0.8"/>
+    <ellipse cx="320" cy="185" rx="45" ry="22" fill="none" stroke="rgba(232,168,48,0.7)" stroke-width="1.5" stroke-dasharray="5,3">
+      <animate attributeName="stroke-opacity" values="0.7;0.3;0.7" dur="2.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="320" cy="185" r="4" fill="#E8A830" opacity="0.9">
+      <animate attributeName="r" values="4;6;4" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.5;0.9" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Trap zone on right flank -->
+    <ellipse cx="580" cy="185" rx="45" ry="22" fill="url(#trapGlow)" opacity="0.6"/>
+    <ellipse cx="580" cy="185" rx="45" ry="22" fill="none" stroke="rgba(232,168,48,0.5)" stroke-width="1.2" stroke-dasharray="5,3"/>
+
+    <!-- ═══ AI OVERLAY — SCAN + DETECTION ═══ -->
+    <!-- Horizontal AI scan line -->
+    <line x1="60" y1="185" x2="840" y2="185" stroke="rgba(0,200,160,0.08)" stroke-width="1" stroke-dasharray="3,6"/>
+
+    <!-- Moving scan beam -->
+    <line x1="0" y1="20" x2="0" y2="360" stroke="rgba(0,200,160,0.2)" stroke-width="1.5" filter="url(#glow)">
+      <animateTransform attributeName="transform" type="translate" from="60,0" to="840,0" dur="5s" repeatCount="indefinite"/>
+    </line>
+
+    <!-- AI detection box around salt dome -->
+    <rect x="292" y="46" width="316" height="312" rx="4" fill="none" stroke="rgba(0,200,160,0.25)" stroke-width="1" stroke-dasharray="8,4">
+      <animate attributeName="stroke-opacity" values="0.25;0.5;0.25" dur="3s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Corner markers of detection box -->
+    <path d="M292,66 L292,46 L312,46" fill="none" stroke="rgba(0,200,160,0.7)" stroke-width="1.5"/>
+    <path d="M588,46 L608,46 L608,66" fill="none" stroke="rgba(0,200,160,0.7)" stroke-width="1.5"/>
+    <path d="M292,338 L292,358 L312,358" fill="none" stroke="rgba(0,200,160,0.7)" stroke-width="1.5"/>
+    <path d="M608,338 L608,358 L588,358" fill="none" stroke="rgba(0,200,160,0.7)" stroke-width="1.5"/>
+
+    <!-- AI detection label — top of dome -->
+    <rect x="362" y="18" width="176" height="24" rx="4" fill="rgba(0,12,20,0.85)" stroke="rgba(0,200,160,0.4)" stroke-width="1"/>
+    <text x="372" y="30" font-family="Space Mono, monospace" font-size="7" fill="#00C8A0" letter-spacing="1.5">SALT DOME DETECTED</text>
+    <text x="372" y="38" font-family="Space Mono, monospace" font-size="6" fill="rgba(0,200,160,0.6)" letter-spacing="1">TYPE: DIAPIR  |  CONF: 94%</text>
+
+    <!-- Trap detection label -->
+    <rect x="210" y="172" width="94" height="28" rx="4" fill="rgba(0,12,20,0.85)" stroke="rgba(232,168,48,0.5)" stroke-width="1"/>
+    <text x="218" y="183" font-family="Space Mono, monospace" font-size="6.5" fill="#E8A830" letter-spacing="1">HC TRAP</text>
+    <text x="218" y="194" font-family="Space Mono, monospace" font-size="6" fill="rgba(232,168,48,0.7)" letter-spacing="0.5">P(HC): 78%</text>
+
+    <!-- ═══ DEPTH SCALE ═══ -->
+    <line x1="858" y1="30" x2="858" y2="360" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <line x1="853" y1="30" x2="863" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="853" y1="130" x2="863" y2="130" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="853" y1="230" x2="863" y2="230" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="853" y1="330" x2="863" y2="330" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <text x="866" y="33" font-family="Space Mono, monospace" font-size="7" fill="rgba(255,255,255,0.25)">0.8km</text>
+    <text x="866" y="133" font-family="Space Mono, monospace" font-size="7" fill="rgba(255,255,255,0.25)">2.1km</text>
+    <text x="866" y="233" font-family="Space Mono, monospace" font-size="7" fill="rgba(255,255,255,0.25)">3.4km</text>
+    <text x="866" y="333" font-family="Space Mono, monospace" font-size="7" fill="rgba(255,255,255,0.25)">4.8km</text>
+
+    <!-- ═══ HORIZON LABELS ═══ -->
+    <text x="14" y="75" font-family="Space Mono, monospace" font-size="7" fill="rgba(0,200,160,0.5)" letter-spacing="1">HORIZON A</text>
+    <text x="14" y="145" font-family="Space Mono, monospace" font-size="7" fill="rgba(0,200,160,0.45)" letter-spacing="1">HORIZON B</text>
+    <text x="14" y="190" font-family="Space Mono, monospace" font-size="7" fill="rgba(0,102,255,0.65)" letter-spacing="1">TARGET ZONE</text>
+    <text x="14" y="265" font-family="Space Mono, monospace" font-size="7" fill="rgba(0,102,255,0.45)" letter-spacing="1">HORIZON D</text>
+    <text x="14" y="340" font-family="Space Mono, monospace" font-size="7" fill="rgba(232,168,48,0.45)" letter-spacing="1">BASE SALT</text>
+
+    <!-- ═══ AI STATUS PANEL ═══ -->
+    <rect x="14" y="14" width="130" height="52" rx="4" fill="rgba(0,12,20,0.8)" stroke="rgba(0,200,160,0.2)" stroke-width="1"/>
+    <text x="22" y="27" font-family="Space Mono, monospace" font-size="6.5" fill="rgba(0,200,160,0.5)" letter-spacing="1.5">AI NAVIGATOR</text>
+    <text x="22" y="39" font-family="Space Mono, monospace" font-size="6" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">STATUS: SCANNING</text>
+    <circle cx="22" cy="55" r="3" fill="#00C8A0">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="30" y="58" font-family="Space Mono, monospace" font-size="6" fill="rgba(0,200,160,0.6)" letter-spacing="0.5">LIVE</text>
+  </svg>
+  <p style="text-align:center; font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1rem;">AI-powered salt dome detection with hydrocarbon trap prediction across seismic horizons</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-eyebrow">How It Works</div>
+  <h2 class="section-title">From seismic data<br>to discovery decision</h2>
+  <p class="section-sub">Four autonomous steps that take your team from raw seismic volumes to confident trap predictions — without leaving the platform.</p>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-icon">🗺</span>
+      <span class="step-num">STEP 01</span>
+      <h3>Navigate the Subsurface</h3>
+      <p>Move through seismic volumes layer by layer — like Google Maps, but for the earth. Each horizon is a navigable, interactive surface.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">🔍</span>
+      <span class="step-num">STEP 02</span>
+      <h3>Detect Anomalies</h3>
+      <p>AI agents continuously scan horizon layers and automatically flag structural anomalies — bulges, amplitude variations, impedance contrasts — the moment they appear.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">🧊</span>
+      <span class="step-num">STEP 03</span>
+      <h3>Reconstruct in 3D</h3>
+      <p>Detected anomalies are instantly rebuilt in three dimensions using your SEG-Y data and formation metadata, giving you immediate spatial clarity.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">🎯</span>
+      <span class="step-num">STEP 04</span>
+      <h3>Predict the Trap</h3>
+      <p>Receive a confidence-scored trap prediction expressed in the depth, amplitude, and impedance parameters your team already uses — grounded, explainable, actionable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <div class="section-eyebrow">Platform Features</div>
+    <h2 class="section-title">Everything your exploration<br>team needs. Nothing it doesn't.</h2>
+    <p class="section-sub">Built specifically for upstream geoscientists. Every feature exists to accelerate one outcome: faster, more confident hydrocarbon discovery.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-tag">Navigation</span>
+        <h3>Immersive Subsurface Navigation</h3>
+        <p>Replace flat 2D cross-sections with an intuitive 3D seismic environment. Navigate formations the way you navigate a city — with full spatial awareness at every depth.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Layers</span>
+        <h3>Interactive Horizon Layers</h3>
+        <p>Each geological horizon is an independently queryable surface. Isolate, compare, and analyze individual layers without losing context of the whole volume.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Detection</span>
+        <h3>Autonomous Anomaly Detection</h3>
+        <p>AI agents work continuously across your seismic data, flagging structural highs, amplitude anomalies, and impedance contrasts automatically — before you even ask.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Reconstruction</span>
+        <h3>Instant 3D Reconstruction</h3>
+        <p>Every detected anomaly is rebuilt in three dimensions on the spot, using your own SEG-Y data and formation metadata. No manual processing. No waiting.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Prediction</span>
+        <h3>Grounded Trap Prediction</h3>
+        <p>Confidence-scored trap predictions expressed in parameters your team already trusts. Not a black box — a transparent, explainable assessment grounded in your data.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Infrastructure</span>
+        <h3>Sovereign AI Infrastructure</h3>
+        <p>Runs entirely on air-gapped, on-premise GPU infrastructure. Your subsurface data never leaves your environment. Built for the most regulated exploration environments on earth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <blockquote>
+    "The next great discovery won't come from more data.<br>It will come from <em>seeing the data differently.</em>"
+  </blockquote>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-badge">Early Access Now Open</div>
+  <h2>The Next Discovery<br><em>Starts Here.</em></h2>
+  <p>Hydrocarbon traps don't wait. Join the geoscientists navigating the subsurface with AI-powered precision and be first to access Subsurface Navigator.</p>
+
+  <form class="cta-form" id="waitlist-form" novalidate>
+    <input type="email" id="waitlist-email" placeholder="you@company.com" required aria-label="Work email address">
+    <button type="submit" id="waitlist-submit">Join the Waiting List</button>
+  </form>
+  <p class="cta-form-note" id="waitlist-note" role="status" aria-live="polite"></p>
+
+  <p class="cta-secondary-link"><a href="mailto:hello@subsurfacenavigator.ai?subject=Demo%20Request">Prefer a live walkthrough? Request a demo →</a></p>
+
+  <p class="cta-trust">
+    Built for exploration teams
+    <span>·</span>
+    Powered by sovereign AI infrastructure
+    <span>·</span>
+    Trusted by geoscientists
+  </p>
+  <div class="horizon-lines"></div>
+</section>
+
+<!-- ACKNOWLEDGMENT -->
+<section style="padding: 2.5rem 4rem; background: var(--black); border-top: 1px solid rgba(0,200,160,0.08); text-align: center;">
+  <p style="font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; line-height: 1.9; max-width: 700px; margin: 0 auto;">
+    <span style="color: rgba(0,200,160,0.5);">✦ ACKNOWLEDGMENT ✦</span><br><br>
+    The HTML design and intriguing copywriting of this landing page were generated using Claude Code (Anthropic). All concepts, ideas, product vision, and reasoning behind Subsurface Navigator — including the navigation paradigm, horizon layer architecture, anomaly detection workflow, 3D reconstruction approach, and grounded trap prediction framework — originated entirely from my own thinking, professional experience, and independent reasoning.
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">⬡ Subsurface Navigator</div>
+  <div class="footer-copy">© 2026 Subsurface Navigator. All rights reserved.</div>
+</footer>
+
+<script>
+  (function () {
+    var form = document.getElementById('waitlist-form');
+    var emailInput = document.getElementById('waitlist-email');
+    var submitBtn = document.getElementById('waitlist-submit');
+    var note = document.getElementById('waitlist-note');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = emailInput.value.trim();
+      var valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+      if (!valid) {
+        note.textContent = 'Enter a valid work email to join the waiting list.';
+        note.classList.remove('success');
+        emailInput.focus();
+        return;
+      }
+
+      // No backend in this prototype — this is where a real submission
+      // (e.g. to a waitlist API or mailing list service) would be wired in.
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Joining…';
+
+      setTimeout(function () {
+        submitBtn.textContent = 'You\'re on the list';
+        note.textContent = 'Thanks — we\'ll reach out at ' + email + ' with early access details.';
+        note.classList.add('success');
+        emailInput.value = '';
+      }, 600);
+    });
+  })();
+</script>
+
+</body>
+</html>
